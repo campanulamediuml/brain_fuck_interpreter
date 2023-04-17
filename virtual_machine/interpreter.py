@@ -119,6 +119,7 @@ class Interpreter(object):
         self.executor_pointer += 1
 
     def execute(self,tape):
+        tape = tape.split('//')[0].strip()
         for i in tape:
             if i not in self.command_table:
                 return print('EXECUTE_ERR --->', error_info.INVALID_COMMAND, i)

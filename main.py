@@ -32,7 +32,6 @@ def main():
             brain_fuck_console()
 
 
-
 def brain_fuck_console():
     while 1:
         command = str(input('BrainFuckTapeIn >>> ')).strip()
