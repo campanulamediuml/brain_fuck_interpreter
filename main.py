@@ -42,6 +42,7 @@ def brain_fuck_console():
 
 
 def expain_string(string):
+    brainfucker.frame = False
     brainfucker.execute(string)
     print('')
 

@@ -29,6 +29,7 @@ class Interpreter(object):
         self.executor_pointer = 0
         self.debug = False
         self.command_table = self.init_table()
+        self.frame = True
 
     def init_table(self):
         command_table = {
@@ -60,26 +61,23 @@ class Interpreter(object):
         self.executor_pointer += 1
 
     def std_i(self):
-        try:
-            inbox = int(input('%s > ' % LAN_DESC_I))
-            try:
-                letter = inbox.to_bytes(8, "little").decode()
-            except:
-                letter = 'Not_ASCII'
-            print(inbox, '--->', letter)
-        except:
-            print('INVALID ASCII CODE!')
-            return
+        raw_input = input('%s > ' % LAN_DESC_I)
+        inbox = list(map(int,str(raw_input).strip()[0].encode()[0:]))[0]
+        print(raw_input[0],'--->',inbox)
         self.memory[self.pointer] = inbox % byte_mode
         self.executor_pointer += 1
 
     def std_o(self):
         value: int = self.memory[self.pointer]
-        try:
-            outbox = value.to_bytes(8, "little").decode()
-        except:
+
+        if 0<=value<128:
+            outbox = value.to_bytes(1, "little").decode()
+        else:
             outbox = 'Not_ASCII'
-        print(value, '--->', outbox)
+        if self.frame is True:
+            print(outbox, '--->', value)
+        else:
+            print(outbox,end='')
         self.executor_pointer += 1
 
     def jump_r(self):
@@ -122,6 +120,7 @@ class Interpreter(object):
 
     def execute(self, tape):
         tape = tape.split('//')[0].strip()
+        tape = tape.replace(' ','').replace('\n','')
         for i in tape:
             if i not in self.command_table:
                 return print('EXECUTE_ERR --->', error_info.INVALID_COMMAND, i)
@@ -130,6 +129,7 @@ class Interpreter(object):
             if self.executor_pointer >= len(self.tape_string):
                 return
             # print(self.executor_pointer,len(self.tape_string))
+            pointer = self.executor_pointer
             command = self.tape_string[self.executor_pointer]
             func = self.command_table.get(command)
             r = func()
@@ -140,11 +140,15 @@ class Interpreter(object):
 
     def dbg(self, command):
         if self.debug == True:
-            print('当前指针 >>', self.pointer)
-            print('当前数值 >>', self.memory[self.pointer])
-            print('解释器已走到 >>', self.executor_pointer)
-            print('本次执行命令 >>', command)
-            print('------------------------')
+            print('当前指针 { %s }'%self.pointer)
+            print('当前数值 { %s }'% self.memory[self.pointer])
+            print('本次执行命令 { %s }'% command)
+            print('解释器已走到 { %s }'% self.pointer)
+            if self.executor_pointer < len(self.tape_string):
+                print('下次执行命令 { %s }'% self.tape_string[self.executor_pointer])
+            else:
+                print('执行完毕！')
+            input('------------------------> 执行下一步 ')
 
 
 brainfucker = Interpreter()
